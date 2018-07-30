@@ -2,11 +2,12 @@ package soxr
 
 /*
 #include <soxr.h>
-#cgo LDFLAGS: -l soxr
+#cgo LDFLAGS: -l soxr -lm -lgomp
 */
 import "C"
 
 import (
+	"errors"
 	"unsafe"
 )
 
@@ -67,10 +68,10 @@ func Create(inputRate, outputRate float64, numChannels uint32, spec IoSpec) (*So
 	cspec.scale = C.double(spec.Scale)
 	cspec.flags = C.ulong(spec.Flags)
 
-	var e *C.char
+	var e C.soxr_error_t
 	s.soxr = C.soxr_create(C.double(inputRate), C.double(outputRate), C.uint(numChannels), &e, &cspec, nil, nil)
 	if s.soxr == nil {
-		return nil, nil
+		return nil, errors.New(C.GoString(e))
 	}
 
 	s.in = getuint(spec.Itype)
@@ -81,12 +82,13 @@ func Create(inputRate, outputRate float64, numChannels uint32, spec IoSpec) (*So
 func (s *Soxr) Process(in []byte, out []byte) (int, error) {
 
 	odone := C.size_t(0)
-	rv := C.soxr_process(s.soxr, unsafe.Pointer(&in[0]), C.int(in)/s.in, nil, unsafe.Pointer(&out[0]), C.int(*out), &odone)
+	rv := C.soxr_process(s.soxr, C.soxr_in_t(unsafe.Pointer(&in[0])), C.size_t(len(in))/C.size_t(s.in),
+		nil, C.soxr_out_t(unsafe.Pointer(&out[0])), C.size_t(len(out))/C.size_t(s.out), &odone)
 	if rv != nil {
-		return 0, errors.New(rv)
+		return 0, errors.New(C.GoString((*C.char)(rv)))
 	}
 
-	return int(odone) * s.out, nil
+	return int(odone) * int(s.out), nil
 }
 
 func (s *Soxr) Close() {
