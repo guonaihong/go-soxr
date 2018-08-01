@@ -46,8 +46,8 @@ func main() {
 	}
 	defer s.Close()
 
-	inBuf := make([]byte, 8000)
-	outBuf := make([]byte, 16000)
+	inBuf := make([]byte, *inSample)
+	outBuf := make([]byte, *outSample)
 	for {
 		n, err := inFd.Read(inBuf)
 		if err != nil {

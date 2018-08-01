@@ -32,12 +32,21 @@ defer s.Close()
 
 #### examples:
 ```
-env GOPATH=`pwd` go get github.com/guonaihong/go-soxr/blob/master/examples/upsample
-./upstream -in pcm_file_8k -out out_pcm_file_16k
+env GOPATH=`pwd` go build github.com/guonaihong/go-soxr/examples/resample
+```
 
+Audio downsampling
+```
+./resample -in 21.16k.pcm -in_sample 16000 -out out_pcm_file_8k -out_sample 8000
+```
+
+Audio upsampling
+```
+./resample -in 21.8k.pcm -in_sample 8000 -out out_pcm_file_16k -out_sample 16000
 ```
 
 This raw audio file may be played using ffplay:
 ```bash
 ffplay -f s16le -ar 16000 ./out_pcm_file_16k
+ffplay -f s16le -ar 8000 ./out_pcm_file_8k
 ```
