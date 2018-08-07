@@ -7,6 +7,12 @@ import (
 	"os"
 )
 
+func memset(buf []byte) {
+	for k, _ := range buf {
+		buf[k] = 0
+	}
+}
+
 func main() {
 	in := flag.String("in", "", "(must)Input pcm file")
 	out := flag.String("out", "", "(must)Output pcm file")
@@ -53,6 +59,8 @@ func main() {
 		if err != nil {
 			break
 		}
+
+		memset(outBuf)
 		n, err = s.Process(inBuf[:n], outBuf)
 		if err != nil {
 			fmt.Printf("soxr process fail:%s\n", err)
