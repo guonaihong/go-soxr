@@ -81,6 +81,10 @@ func Create(inputRate, outputRate float64, numChannels uint32, spec IoSpec) (*So
 
 func (s *Soxr) Process(in []byte, out []byte) (int, error) {
 
+	if len(in)%2 != 0 {
+		panic("The length of the input pcm cannot be an odd number")
+	}
+
 	odone := C.size_t(0)
 	rv := C.soxr_process(s.soxr, C.soxr_in_t(unsafe.Pointer(&in[0])), C.size_t(len(in))/C.size_t(s.in),
 		nil, C.soxr_out_t(unsafe.Pointer(&out[0])), C.size_t(len(out))/C.size_t(s.out), &odone)
